@@ -1,0 +1,18 @@
+#PBS -q regular
+#PBS -l mppwidth=120
+#PBS -l walltime=08:00:00
+#PBS -V
+#PBS -e $PBS_JOBID.err
+#PBS -o $PBS_JOBID.out
+#PBS -N $PBS_O_WORKDIR
+#PBS -m a
+#PBS -M Eder.Sousa@pnl.gov
+
+module purge
+module load PrgEnv-pgi
+module load hdf5-parallel
+module load zlib
+module load szip
+
+cd $PBS_O_WORKDIR
+aprun -n 120 $warpx -i ssrecon_wv_2.inp

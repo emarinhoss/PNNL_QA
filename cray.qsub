@@ -1,0 +1,12 @@
+#PBS -q regular
+#PBS -l mppwidth=72
+#PBS -l walltime=02:30:00
+#PBS -V
+#PBS -e $PBS_JOBID.err
+#PBS -o $PBS_JOBID.out
+#PBS -N $PBS_O_WORKDIR
+#PBS -m a
+#PBS -M Eder.Sousa@pnl.gov
+
+cd $PBS_O_WORKDIR
+aprun -n 72 $warpx -i ssrecon_wv.inp
