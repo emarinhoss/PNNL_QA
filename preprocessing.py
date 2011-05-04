@@ -15,8 +15,8 @@ for count in range(last):
 	# uniform varying values of mass ration from
 	# a to b given a certain value of ME
 	v = random.uniform(20,30)
-	me = 0.01
-	mi = v * me
+	mi = 1.0
+	me = mi/v
 
 	# uniform varying values of the speed of light
 	c = random.uniform(8,12)
