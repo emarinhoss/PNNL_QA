@@ -1,307 +1,149 @@
 
 
-Q = 1.0
-GAMMA = 1.66666666667
-EPS0 = 1.0
-# -*- shell-script -*-
+
+XUP = 20.0
+YUP = 3.0
+V = 0.0 # Y-advection speed
+TEND = 10.0
+
 <warpx>
+##
+# Basic parameters
+##
+ Run_name = rname # run name
+ Simulation = comboSolver # simulation 
+ Real = double # precision type: float/double
+ # one of debug, info, warning, error, critical, disabled
+ Verbosity = debug
 
-  ##
-  # Basic parameters
-  ##
-  Run_name = ssrecon_wv # run name
-  Simulation = ssrecon # simulation 
-  Real = double # precision type: float/double
-  # one of debug, info, warning, error, critical, disabled
-  Verbosity = debug
+ <comboSolver>
+   Type = WxSolver
+   Kind = comboSolver   
+    
+   Time = [0.0, TEND]
+   Dt = 0.1*TEND
+   Out = 40
+ 
+   # grid on which to solve equations
+   <grid>
+     Type = WxGridBox
 
-  <ssrecon>
-    Type = WxSolver
-    Kind = comboSolver
+     Lower = [0.0, 0.0]
+     Upper = [XUP, YUP]
+     Cells = [nx, ny]
 
-    Time = [0.0, 800.0] # start, end times
-    Out = 80 # no of output files to write
-    Dt = 0.04 # initial dt to try
-    UseFixedDt = 0
-    ##
-    # Grid defintion
-    ##
-    <grid>
-    Type = WxGridBox
-    Dimensions = 2
+     PeriodicDirs = [0,1]
+   </grid>
 
-    Lower = [-12.8, -6.4] # lower coordinates of block
-    Upper = [12.8, 6.4] # upper coordinates of block
-    Cells = [32, 16] # no of cells
+   # arrays for storing solution
+   <qnew>
+     Type = WxVariable
+     Kind = parArray
 
-    PeriodicDirs = [0] # X is periodic
-    </grid>
+     OnGrid = grid
+     NumComponents = 1
+     GhostCells = [2, 2]
+   </qnew>
+   
+   <q>
+     Type = WxVariable
+     Kind = parArray
 
-    ##
-    # Array definitions
-    ##
-    <qold>
-      Type = WxVariable
-      Kind = parArray
+     OnGrid = grid
+     NumComponents = 1
+     GhostCells = [2, 2]
+   </q>
 
-      OnGrid = grid
-      NumComponents = 18 # number of components
-      GhostCells = [2, 2] # no of ghost cells
-    </qold>
-
-    <qnew>
-      Type = WxVariable
-      Kind = parArray
-
-      OnGrid = grid
-      NumComponents = 18 # number of components
-      GhostCells = [2, 2] # no of ghost cells
-    </qnew>
-
-    ##
-    # Subsolver definitions
-    ## 
-
-    # hyperbolic solver
-    <hyperbolicSolver>
-      Type = WxSubSolver
-      Kind = hyperSubSolver
-
-      Scheme = wavePropagation
-
-      ReadVars = [qold]
-      WriteVars = [qnew]
-      OnGrid = grid
-
-      Equations = [eulerElc, eulerIon, maxwell] # equation to solve
-      Sources = [lorentzElc, lorentzIon, ionCurrents, elcCurrents, rhoC] # source terms
-
-      # array initializer
-      Initialize = [qold, qnew]
-      <InitialCondition>
-        Type = WxFunction
-        Kind = twoFluidRecon # name of initial-condition function
-
-        qe = -Q # electron charge
-        qi = Q  # ion charge
-        me = ME # electron mass = 1/25
-        mi = MI  # ion mass
-
-        gas_gamma = GAMMA # gas constant
-
-      </InitialCondition>
-
-      # Wave propagation scheme
-      <wavePropagation>
-        Kind = wave2d # type of scheme
-
-        Cfl = 0.45 # CFL number to use
-        Cflm = 0.5 # maximum CFL allowed
-
-        spatialOrder = 2 # spatial order 1: Gudonov, 2: Lax-Wendroff
-        sourceSplitting = 1 # 1: Gudonov splitting, 2: Strang splitting
-        # one of minmod, superbee, van-leer, monotonized-centered or beam-warming
-        limiter = van-leer
-      </wavePropagation>
-
-      ##
-      # Electron equations
-      ##
-      <eulerElc>
-        Type = WxHyperbolicEqn
-        Kind = eulerEqn
-
-        gas_gamma = GAMMA
-      </eulerElc>
-
-      ##
-      # Ion equations
-      ##
-      <eulerIon>
-        Type = WxHyperbolicEqn
-        Kind = eulerEqn
-
-        gas_gamma = GAMMA
-      </eulerIon>
-
-      ##
-      # Maxwell equations
-      ##
-      <maxwell>
-        Type = WxHyperbolicEqn
-        Kind = phMaxwellEqn
-
-        c0 = LIGHT_SPEED
-        gamma = 1.0 # error propagation speed for div(B)
-        chi = 1.0
-      </maxwell>
-
-      ##
-      # Lorentz source term for electron
-      ##
-      <lorentzElc>
-        Type = WxHyperbolicSrc
-        Kind = lorentzForces
-
-        InpRange = [0,1,2,3, 10,11,12,13,14,15]
-        OutRange = [1,2,3,4]
-
-        mass = ME
-        charge = -Q
-      </lorentzElc>
-
-      ##
-      # Lorentz source term for ions
-      ##
-      <lorentzIon>
-        Type = WxHyperbolicSrc
-        Kind = lorentzForces
-
-        InpRange = [5,6,7,8, 10,11,12,13,14,15]
-        OutRange = [6,7,8,9]
-
-        mass = MI
-        charge = Q
-      </lorentzIon>
-
-      ##
-      # Current sources for electric field from electrons
-      ##
-      <elcCurrents>
-        Type = WxHyperbolicSrc
-        Kind = currents
-
-        InpRange = [1,2,3]
-        OutRange = [10,11,12]
-
-        mass = ME
-        charge = -Q
-        epsilon0 = 1.0
-      </elcCurrents>
-
-      ##
-      # Current sources for electric field from ions
-      ##
-      <ionCurrents>
-        Type = WxHyperbolicSrc
-        Kind = currents
-
-        InpRange = [6,7,8]
-        OutRange = [10,11,12]
-
-        charge = Q
-        mass = MI
-        epsilon0 = 1.0
-      </ionCurrents>
-
-      <rhoC>
-        Type = WxHyperbolicSrc
-        Kind = chargeDensity
-
-        InpRange = [0,5] # electron and ion density respectively
-        OutRange = [16] # phi equation
-
-        qi = Q
-        qe = -Q
-        mi = MI
-        me = ME
-        epsilon0 = 1.0
-        chi = 1.0
-      </rhoC>
-
-    </hyperbolicSolver>
-
-
-    # Set qnew back to qold so it can be used in hyperbolicSolve
-    <copier>
-      Type = WxSubSolver
-      Kind = linearCombiner
-
-      OnGrid = grid
-      ReadVars = [qnew]
-      coeffs = [1.0]
-      WriteVars = [qold]
-    </copier>
-
-   # use q to see if wpe, wpi, wce, wci are resolved
-   <chk_freq>
+   # define the hyperbolic subsolver
+   <hyperbolic>
      Type = WxSubSolver
-     Kind = checkFreqTimeStepWv
+     Kind = hyperSubSolver
 
-     charge = Q
-     ionmass = MI
-     elcmass = ME
-     epsilon0 = EPS0
-     
+     OnGrid = grid
+     ReadVars = [q]
+     WriteVars = [qnew]
+
+     Scheme = wavePropagation
+     Equations = [advection]
+
+     # define function for initial conditions
+     Initialize = [q, qnew] # arrays to initialize
+     <InitialCondition>
+       Type = WxFunction
+       Kind = exprFunc # name of initial-condition function
+
+       # constants for use in expressions
+       xc = XUP/2.0
+       yc = YUP/2.0
+
+       # list of preiliminary expressions to execute
+       progn = ["r2 = (x-xc)^2 + (y-yc)^2"]
+       # list of expressions: one per component to initiliaize
+       exprList = ["exp(-10*r2)"]
+
+     </InitialCondition>
+
+     # define scheme parameters
+     <wavePropagation>
+       Type = WxHyperbolicScheme
+       Kind = wave2d # type of scheme
+
+       Cfl = 0.49 # CFL number to use
+       Cflm = 0.5 # maximum CFL allowed
+
+       spatialOrder = 2 # spatial order 1: Gudonov, 2: Lax-Wendroff
+       sourceSplitting = 0 # 0: no source, 1: Gudonov splitting, 2: Strang splitting
+       # one of no-limiter minmod, superbee, van-leer, monotonized-centered or beam-warming
+       limiter = no-limiter
+     </wavePropagation>     
+
+     # define equation parameters
+     <advection>
+       Type = WxHyperbolicEqn
+       Kind = advectionEqn # kind of equations
+
+       ux = U # x-velocity
+       uy = V # y-velocity
+       
+     </advection>
+
+   </hyperbolic>
+
+   # define subsolver to copy qold to q
+   <copier>
+     Type = WxSubSolver
+     Kind = linearCombiner
+
      OnGrid = grid
 
-     ReadVars = [qold]
+     ReadVars = [qnew]
+     coeffs   = [1.0]
+     WriteVars = [q]
 
-   </chk_freq>
+   </copier>
 
+   # define homogenous step
+   <homogeneous>
+     Type = WxSubSolverStep
 
-    <lowerBC>
-      Type = WxSubSolver
-      Kind = bcConductingTwoFluid
+     DtFrac = 1.0 # time fraction to apply this update step
+     SubSolvers = [hyperbolic] # subsolver to apply
+   </homogeneous>
 
-      OnGrid = grid
-      WriteVars = [qold, qnew]
+   # define copy step
+   <copy>
+     Type = WxSubSolverStep
 
-      direction = 1
-      edge = lower
-    </lowerBC>
+     SubSolvers = [copier] # subsolver to apply
+   </copy>
 
-    # define lower boundary condition applicator
-    <upperBC>
-      Type = WxSubSolver
-      Kind = bcConductingTwoFluid
+   # define subsolver sequence to apply
+   <SolverSequence>
+     Type = WxSolverSequence
 
-      OnGrid = grid
-      WriteVars = [qold, qnew]
+     PerStep = [homogeneous, copy] # sequence of steps
+   </SolverSequence>
 
-      direction = 1
-      edge = upper
-    </upperBC>
-
-    ##
-    # Subsolver steps
-    ##
-
-    # solve hyperbolic equations
-    # define boundary condition step
-    <applyBC>
-      Type = WxSubSolverStep
-
-      SubSolvers = [lowerBC, upperBC] # subsolver to apply
-    </applyBC>
-
-
-    <solveHyperEqn>
-      Type = WxSubSolverStep
-
-      DtFrac = 1.0
-      SubSolvers = [hyperbolicSolver]
-    </solveHyperEqn>
-
-    <copy>
-      Type = WxSubSolverStep
-      SubSolvers = [copier]
-    </copy>
-
-    <chkfreq>
-      Type = WxSubSolverStep
-      SubSolvers = [chk_freq]
-    </chkfreq>
-
-    ##
-    # Solver sequence
-    ##
-    <SolverSequence>
-      Type = WxSolverSequence
-      PerStep = [chkfreq, applyBC, solveHyperEqn, applyBC, copy] # apply at each step
-
-    </SolverSequence>
-
-  </ssrecon>
+ </comboSolver>
 
 </warpx>

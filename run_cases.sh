@@ -1,19 +1,19 @@
-for f in recon_006_MR_*; do
+for f in advect_001*; do
     band=$(echo "$f")
     cd "$band"
-    $wxpp -i ssrecon_wv_0.pin
-    #qsub cray_0.qsub
+    $wxpp -i advect_0.pin
+    $warpxs -i advect_0.inp
 
-    if [ -a "ssrecon_wv_1.pin" ]
+    if [ -a "advect_1.pin" ]
 	then
-	$wxpp -i ssrecon_wv_1.pin
-	#qsub cray_1.qsub
+	$wxpp -i advect_1.pin
+	$warpxs -i advect_1.inp
     fi
 
-    if [ -a "ssrecon_wv_2.pin" ]
+    if [ -a "advect_2.pin" ]
 	then
-	$wxpp -i ssrecon_wv_2.pin
-	#qsub cray_2.qsub
+	$wxpp -i advect_2.pin
+	$warpxs -i advect_2.inp
     fi
 
     cd ../
