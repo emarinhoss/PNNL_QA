@@ -1,0 +1,166 @@
+
+
+import math
+# adiabatic index
+GAMMA = 1.4
+MI = 1.0
+Q = 10.0
+TEND = 10.0
+
+<warpx>
+ Simulation = comboSolver
+ Verbosity = info
+ Real = double
+
+ <comboSolver>
+   Type = WxSolver
+   Kind = comboSolver   
+    
+   Time = [0.0, TEND]
+   Dt = 0.1*TEND
+   Out = 10
+ 
+   # grid on which to solve equations
+   <grid>
+     Type = WxGridBox
+
+     Lower = [0.0]
+     Upper = [1.0]
+     Cells = [nx]
+
+     PeriodicDirs = [0]
+
+   </grid>
+
+   # arrays for storing solution
+   <qnew>
+     Type = WxVariable
+     Kind = parArray
+
+     OnGrid = grid
+     NumComponents = 5
+     GhostCells = [2, 2]
+   </qnew>
+   
+   <q>
+     Type = WxVariable
+     Kind = parArray
+
+     OnGrid = grid
+     NumComponents = 5
+     GhostCells = [2, 2]
+   </q>
+
+   # define the hyperbolic subsolver
+   <hyperbolic>
+     Type = WxSubSolver
+     Kind = hyperSubSolver
+
+     OnGrid = grid
+     ReadVars = [q]
+     WriteVars = [qnew]
+
+     Scheme = wave
+     Equations = [euler]
+     Sources = [chargedFluid]
+     
+     # define function for initial conditions
+     Initialize = [q, qnew] # arrays to initialize
+     <InitialCondition>
+       Type = WxFunction
+       Kind = elecAcoustic
+
+       mass = MI
+       charge = Q
+       bx = 0.0
+       by = 0.0
+       bz = 1.0
+
+       gas_gamma = GAMMA
+       u_i = value # initial velocity specified
+       rho_i = 1.0 # initial background density
+       P_i = 1.0 # intial background pressure
+       nmode = 9 # number of modes for the Fourier series of square wave
+
+     </InitialCondition>
+
+     # define scheme parameters
+     <wave>
+       Type = WxHyperbolicScheme
+       Kind = wave1d # type of scheme
+
+       Cfl = 1.0 # CFL number to use
+       Cflm = 1.0001 # maximum CFL allowed
+
+       spatialOrder = 2 # spatial order 1: Gudonov, 2: Lax-Wendroff
+       sourceSplitting = 1 # 0: no source, 1: Gudonov splitting, 2: Strang splitting
+       # one of minmod, superbee, van-leer, monotonized-centered or beam-warming
+       limiter = no-limiter
+
+     </wave>
+     
+     # define equation parameters
+     <euler>
+       Type = WxHyperbolicEqn
+       Kind = eulerEqn # kind of equations
+
+       gas_gamma = GAMMA # gas constant
+     </euler>
+
+
+     # dispersive Euler source term for charged fluid
+     <chargedFluid>
+       Type = WxHyperbolicSrc
+       Kind = dispersiveEuler
+
+       InpRange = [1,2,3]
+       OutRange = [1,2,3]
+       
+       mass = MI
+       charge = Q
+       bx = 0.0
+       by = 0.0
+       bz = 1.0
+       
+     </chargedFluid>
+
+   </hyperbolic>
+
+   # define subsolver to copy qold to q
+   <copier>
+     Type = WxSubSolver
+     Kind = linearCombiner
+
+     OnGrid = grid
+
+     ReadVars = [qnew]
+     coeffs   = [1.0]
+     WriteVars = [q]
+
+   </copier>
+
+   # define homogenous step
+   <homogeneous>
+     Type = WxSubSolverStep
+
+     DtFrac = 1.0 # time fraction to apply this update step
+     SubSolvers = [hyperbolic] # subsolver to apply
+   </homogeneous>
+
+   # define boundary condition step
+   <copy>
+     Type = WxSubSolverStep
+
+     SubSolvers = [copier] # subsolver to apply
+   </copy>
+
+   # define subsolver sequence to apply
+   <SolverSequence>
+     Type = WxSolverSequence
+
+     PerStep = [homogeneous, copy] # sequence of steps
+   </SolverSequence>
+
+ </comboSolver>
+
+</warpx>
