@@ -1,0 +1,131 @@
+<warpx>
+  Simulation = comboSolver
+  Verbosity = info
+  Real = double
+
+  <comboSolver>
+    Type = WxSolver
+    Kind = comboSolver
+    Time = [0.0, 10.0]
+    Dt = 1.0
+    Out = 10
+
+    <grid>
+      Type = WxGridBox
+      Lower = [0.0]
+      Upper = [1.0]
+      Cells = [nx]
+      PeriodicDirs = [0]
+
+    </grid>
+
+    <qnew>
+      Type = WxVariable
+      Kind = parArray
+      OnGrid = grid
+      NumComponents = 5
+      GhostCells = [2, 2]
+
+    </qnew>
+
+    <q>
+      Type = WxVariable
+      Kind = parArray
+      OnGrid = grid
+      NumComponents = 5
+      GhostCells = [2, 2]
+
+    </q>
+
+    <hyperbolic>
+      Type = WxSubSolver
+      Kind = hyperSubSolver
+      OnGrid = grid
+      ReadVars = [q]
+      WriteVars = [qnew]
+      Scheme = wave
+      Equations = [euler]
+      Sources = [chargedFluid]
+      Initialize = [q, qnew]
+
+      <InitialCondition>
+        Type = WxFunction
+        Kind = elecAcoustic
+        mass = 1.0
+        charge = 10.0
+        bx = 0.0
+        by = 0.0
+        bz = 1.0
+        gas_gamma = 1.4
+        u_i = value
+        rho_i = 1.0
+        P_i = 1.0
+        nmode = 9
+
+      </InitialCondition>
+
+      <wave>
+        Type = WxHyperbolicScheme
+        Kind = wave1d
+        Cfl = 1.0
+        Cflm = 1.0001
+        spatialOrder = 2
+        sourceSplitting = 1
+        limiter = no-limiter
+
+      </wave>
+
+      <euler>
+        Type = WxHyperbolicEqn
+        Kind = eulerEqn
+        gas_gamma = 1.4
+
+      </euler>
+
+      <chargedFluid>
+        Type = WxHyperbolicSrc
+        Kind = dispersiveEuler
+        InpRange = [1, 2, 3]
+        OutRange = [1, 2, 3]
+        mass = 1.0
+        charge = 10.0
+        bx = 0.0
+        by = 0.0
+        bz = 1.0
+
+      </chargedFluid>
+
+    </hyperbolic>
+
+    <copier>
+      Type = WxSubSolver
+      Kind = linearCombiner
+      OnGrid = grid
+      ReadVars = [qnew]
+      coeffs = [1.0]
+      WriteVars = [q]
+
+    </copier>
+
+    <homogeneous>
+      Type = WxSubSolverStep
+      DtFrac = 1.0
+      SubSolvers = [hyperbolic]
+
+    </homogeneous>
+
+    <copy>
+      Type = WxSubSolverStep
+      SubSolvers = [copier]
+
+    </copy>
+
+    <SolverSequence>
+      Type = WxSolverSequence
+      PerStep = [homogeneous, copy]
+
+    </SolverSequence>
+
+  </comboSolver>
+
+</warpx>
