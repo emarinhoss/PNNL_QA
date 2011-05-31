@@ -1,0 +1,231 @@
+<warpx>
+  Run_name = ssrecon_wv
+  Simulation = ssrecon
+  Real = double
+  Verbosity = debug
+
+  <ssrecon>
+    Type = WxSolver
+    Kind = comboSolver
+    Time = [0.0, 0.10000000000000001]
+    Out = 10
+    Dt = 0.04
+    UseFixedDt = 0
+
+    <grid>
+      Type = WxGridBox
+      Dimensions = 2
+      Lower = [-12.800000000000001, -6.4000000000000004]
+      Upper = [12.800000000000001, 6.4000000000000004]
+      Cells = [32, 16]
+      PeriodicDirs = [0]
+
+    </grid>
+
+    <qold>
+      Type = WxVariable
+      Kind = parArray
+      OnGrid = grid
+      NumComponents = 18
+      GhostCells = [2, 2]
+
+    </qold>
+
+    <qnew>
+      Type = WxVariable
+      Kind = parArray
+      OnGrid = grid
+      NumComponents = 18
+      GhostCells = [2, 2]
+
+    </qnew>
+
+    <hyperbolicSolver>
+      Type = WxSubSolver
+      Kind = hyperSubSolver
+      Scheme = wavePropagation
+      ReadVars = [qold]
+      WriteVars = [qnew]
+      OnGrid = grid
+      Equations = [eulerElc, eulerIon, maxwell]
+      Sources = [lorentzElc, lorentzIon, ionCurrents, elcCurrents, rhoC]
+      Initialize = [qold, qnew]
+
+      <InitialCondition>
+        Type = WxFunction
+        Kind = twoFluidRecon
+        qe = -1.0
+        qi = 1.0
+        me = 0.01
+        mi = 1.0
+        gas_gamma = 1.66666666667
+
+      </InitialCondition>
+
+      <wavePropagation>
+        Kind = wave2d
+        Cfl = 0.45
+        Cflm = 0.5
+        spatialOrder = 2
+        sourceSplitting = 1
+        limiter = van-leer
+
+      </wavePropagation>
+
+      <eulerElc>
+        Type = WxHyperbolicEqn
+        Kind = eulerEqn
+        gas_gamma = 1.66666666667
+
+      </eulerElc>
+
+      <eulerIon>
+        Type = WxHyperbolicEqn
+        Kind = eulerEqn
+        gas_gamma = 1.66666666667
+
+      </eulerIon>
+
+      <maxwell>
+        Type = WxHyperbolicEqn
+        Kind = phMaxwellEqn
+        c0 = 1.0
+        gamma = 1.0
+        chi = 1.0
+
+      </maxwell>
+
+      <lorentzElc>
+        Type = WxHyperbolicSrc
+        Kind = lorentzForces
+        InpRange = [0, 1, 2, 3, 10, 11, 12, 13, 14, 15]
+        OutRange = [1, 2, 3, 4]
+        mass = 0.01
+        charge = -1.0
+
+      </lorentzElc>
+
+      <lorentzIon>
+        Type = WxHyperbolicSrc
+        Kind = lorentzForces
+        InpRange = [5, 6, 7, 8, 10, 11, 12, 13, 14, 15]
+        OutRange = [6, 7, 8, 9]
+        mass = 1.0
+        charge = 1.0
+
+      </lorentzIon>
+
+      <elcCurrents>
+        Type = WxHyperbolicSrc
+        Kind = currents
+        InpRange = [1, 2, 3]
+        OutRange = [10, 11, 12]
+        mass = 0.01
+        charge = -1.0
+        epsilon0 = 1.0
+
+      </elcCurrents>
+
+      <ionCurrents>
+        Type = WxHyperbolicSrc
+        Kind = currents
+        InpRange = [6, 7, 8]
+        OutRange = [10, 11, 12]
+        charge = 1.0
+        mass = 1.0
+        epsilon0 = 1.0
+
+      </ionCurrents>
+
+      <rhoC>
+        Type = WxHyperbolicSrc
+        Kind = chargeDensity
+        InpRange = [0, 5]
+        OutRange = [16]
+        qi = 1.0
+        qe = -1.0
+        mi = 1.0
+        me = 0.01
+        epsilon0 = 1.0
+        chi = 1.0
+
+      </rhoC>
+
+    </hyperbolicSolver>
+
+    <copier>
+      Type = WxSubSolver
+      Kind = linearCombiner
+      OnGrid = grid
+      ReadVars = [qnew]
+      coeffs = [1.0]
+      WriteVars = [qold]
+
+    </copier>
+
+    <chk_freq>
+      Type = WxSubSolver
+      Kind = checkFreqTimeStepWv
+      charge = 1.0
+      ionmass = 1.0
+      elcmass = 0.01
+      epsilon0 = 1.0
+      OnGrid = grid
+      ReadVars = [qold]
+
+    </chk_freq>
+
+    <lowerBC>
+      Type = WxSubSolver
+      Kind = bcConductingTwoFluid
+      OnGrid = grid
+      WriteVars = [qold, qnew]
+      direction = 1
+      edge = lower
+
+    </lowerBC>
+
+    <upperBC>
+      Type = WxSubSolver
+      Kind = bcConductingTwoFluid
+      OnGrid = grid
+      WriteVars = [qold, qnew]
+      direction = 1
+      edge = upper
+
+    </upperBC>
+
+    <applyBC>
+      Type = WxSubSolverStep
+      SubSolvers = [lowerBC, upperBC]
+
+    </applyBC>
+
+    <solveHyperEqn>
+      Type = WxSubSolverStep
+      DtFrac = 1.0
+      SubSolvers = [hyperbolicSolver]
+
+    </solveHyperEqn>
+
+    <copy>
+      Type = WxSubSolverStep
+      SubSolvers = [copier]
+
+    </copy>
+
+    <chkfreq>
+      Type = WxSubSolverStep
+      SubSolvers = [chk_freq]
+
+    </chkfreq>
+
+    <SolverSequence>
+      Type = WxSolverSequence
+      PerStep = [chkfreq, applyBC, solveHyperEqn, applyBC, copy]
+
+    </SolverSequence>
+
+  </ssrecon>
+
+</warpx>
