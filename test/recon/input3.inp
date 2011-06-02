@@ -2,13 +2,13 @@
   Run_name = ssrecon_wv
   Simulation = ssrecon
   Real = double
-  Verbosity = debug
+  Verbosity = error
 
   <ssrecon>
     Type = WxSolver
     Kind = comboSolver
-    Time = [0.0, 0.10000000000000001]
-    Out = 10
+    Time = [0.0, 400.0000000000000001]
+    Out = 40
     Dt = 0.04
     UseFixedDt = 0
 

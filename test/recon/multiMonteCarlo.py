@@ -2,7 +2,7 @@ import os
 import glob
 import math
 import numpy as np
-from pylab import *
+#from pylab import *
 import original_mmc_warpx as mmc
 import wxdata as wx
 import time
@@ -13,8 +13,8 @@ N = 5		# inital number of samples
 M = 2		# 
 e = 1.0e-2	# tolerance
 L = 0		# inital level
-nx = 36		# spacial resolution
-frames = 10
+nx = 32		# spacial resolution
+frames = 40
 
 ml = []
 ui = []
@@ -42,8 +42,6 @@ while 1:
 	
 	# Step 3: Calculate Optimal Nl, l=0,1,...,L
 	Nl = np.ceil(2*e**(-2)*np.sqrt(Vl/ml)*np.sum(np.sqrt(Vl/ml)))
-	print Nl
-	time.sleep(5)
 	
 	# Step 4: Evaluate extra samples at each level as needed for the
 	# new Nl
@@ -64,7 +62,7 @@ while 1:
 		YL  = suml2[L]/suml1[L]
 		yl  = max(np.abs(YL))
 		converged = (max(yl1,yl)<1/(np.sqrt(2))*(M-1)*e)
-		if converged or (L>5):
+		if converged:
 			break
 	
 	# Step 6: If not converged, set L=L+1 and go back to 2
@@ -81,11 +79,38 @@ for m in range(0,L+1):
 	mmc_varn= mmc_varn+ 1./suml1[m]*(suml3[m]/(suml1[m]-1) - (1/(suml1[m]**2-suml1[m]))*(suml2[m])**2)
 	levels.append(m)
 
-figure(1)
-font = {'fontsize'   : 20}
-errorbar(T,mmc_sol,mmc_varn)
-xlabel('Position',font)
-ylabel('Error',font)
-yticks(fontsize=18)
-xticks(fontsize=18)
-savefig('Solution.png')
+#figure(1)
+#font = {'fontsize'   : 20}
+#errorbar(T,mmc_sol,mmc_varn)
+#xlabel('Position',font)
+#ylabel('Error',font)
+#yticks(fontsize=18)
+#xticks(fontsize=18)
+#savefig('Solution.png')
+
+# Output data
+fmean =np.column_stack((T,mmc_sol))
+savetxt('mean.dat',fmean)
+
+fvarn =np.column_stack((T,mmc_varn))
+savetxt('varn.dat',fmean)
+
+fsuml1=np.column_stack((suml1))
+savetxt('suml1.dat',fsuml1)
+
+fsuml2=np.column_stack((suml2))
+savetxt('suml2.dat',fsuml2)
+
+fsuml3=np.column_stack((suml3))
+savetxt('suml3.dat',fsuml3)
+
+fsuml4=np.column_stack((suml4))
+savetxt('suml4.dat',fsuml4)
+
+fsuml5=np.column_stack((suml5))
+savetxt('suml5.dat',fsuml5)
+
+rnd=np.column_stack((ui))
+savetxt('rand_vals.dat',rnd)
+
+savetxt('run_info.dat',(M,N,e,ml,nx,frames,Nl,L))

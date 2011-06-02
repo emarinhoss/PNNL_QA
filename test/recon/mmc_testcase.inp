@@ -2,13 +2,13 @@
   Run_name = ssrecon_wv
   Simulation = ssrecon
   Real = double
-  Verbosity = debug
+  Verbosity = error
 
   <ssrecon>
     Type = WxSolver
     Kind = comboSolver
-    Time = [0.0, 0.10000000000000001]
-    Out = 10
+    Time = [0.0, 400.0000000000000001]
+    Out = 40
     Dt = 0.04
     UseFixedDt = 0
 
@@ -17,7 +17,7 @@
       Dimensions = 2
       Lower = [-12.800000000000001, -6.4000000000000004]
       Upper = [12.800000000000001, 6.4000000000000004]
-      Cells = [72, 36]
+      Cells = [32, 16]
       PeriodicDirs = [0]
 
     </grid>
@@ -56,7 +56,7 @@
         Kind = twoFluidRecon
         qe = -1.0
         qi = 1.0
-        me = 26.226010124
+        me = 34.2637208957
         mi = 1.0
         gas_gamma = 1.66666666667
 
@@ -145,7 +145,7 @@
         qi = 1.0
         qe = -1.0
         mi = 1.0
-        me = 26.226010124
+        me = 34.2637208957
         epsilon0 = 1.0
         chi = 1.0
 

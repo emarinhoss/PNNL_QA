@@ -5,6 +5,7 @@ import fileinput
 import sys
 import string
 import wxdata as wx
+import subprocess
 
 def preprocess(m,N,L,frames,ui):
 
@@ -13,14 +14,14 @@ def preprocess(m,N,L,frames,ui):
 
 	for count in range(1,N+1):
 		# uniform varying values
-		v = random.uniform(25,30)
+		v = random.uniform(25,100)
 		#v = random.gauss(3,1.0)
 		ui.append(v)
 		
-		Xf = getdata(v,1.0,m[L],L,frames)
+		Xf = getdata(v,1.0,0.1,m[L],L,frames)
 		
 		if L > 0:
-			Xc = getdata(v,1.0,m[L-1],L-1,frames)
+			Xc = getdata(v,1.0,0.1,m[L-1],L-1,frames)
 		else:
 			Xc=np.zeros(frames+1, np.float)
 
@@ -41,25 +42,28 @@ def variance(sum1,sum2,N):
 		var[k] = max(v - m*m)
 	return var
 
-def getdata(v,LS,res,L,frames):
+def getdata(v,LS,BFP,res,L,frames):
 
-	os.system("cp input3.inp mmc_testcase.inp")
+	os.system("cp input_mmc.inp mmc_testcase.inp")
 	resx = res
 	resy = res/2
 	for line in fileinput.input("mmc_testcase.inp", inplace=1):
-		if "        me = ME" in line:
-			line = line.replace("        me = ME","        me = "+str(v))
+		if "ME" in line:
+			line = line.replace("ME",str(v))
 		elif "      Cells = [resx, resy]" in line:
 			line = line.replace("      Cells = [resx, resy]","      Cells = ["+str(resx)+", "+str(resy)+"]")
-		elif "        c0 = LS" in line:
-			line = line.replace("        c0 = LS","              c0 = "+str(LS))
+		elif "LS" in line:
+			line = line.replace("LS",str(LS))
+		elif "bpert" in line:
+			line = line.replace("bpert",str(BFP))
 		sys.stdout.write(line)
 		
 	folder = ("U_" + str(v))
 	where1 = ('L'+str(L) + '/' + folder)
 	os.mkdir(where1)
-	
-	os.system("mpirun -n 1 $warpxp -i mmc_testcase.inp")
+
+	p = subprocess.Popen("crun -nodes 1 -cores 1 $warpx -i mmc_testcase.inp", shell=True)
+	sts = os.waitpid(p.pid, 0)[1]
 	
 	fluxtfh = np.zeros(frames+1, np.float)
 	
@@ -77,4 +81,6 @@ def getdata(v,LS,res,L,frames):
 	Ly = 12.8	
 	fluxtfh = fluxtfh/(2*Ly)
 	fluxtfh = 0.2*fluxtfh/fluxtfh[0] # rescale to match GEM conditions
+	
+	os.system('mv *.h5 *.log mmc_testcase.inp ' + where1)
 	return fluxtfh
