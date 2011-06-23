@@ -13,7 +13,7 @@ N = 5		# inital number of samples
 M = 2		# 
 e = 1.0e-2	# tolerance
 L = 0		# inital level
-nx = 32		# spacial resolution
+nx = 256        # spacial resolution
 frames = 40
 
 ml = []
@@ -54,6 +54,45 @@ while 1:
 			suml3[k] = suml3[k] + sums[1,:]
 			suml4[k] = suml4[k] + sums[2,:]
 			suml5[k] = suml5[k] + sums[3,:]
+			
+	# Output files
+	fsuml1=np.column_stack((suml1))
+	np.savetxt('suml1.dat',fsuml1)
+
+	fsuml2=np.column_stack((suml2))
+	np.savetxt('suml2.dat',fsuml2)
+
+	fsuml3=np.column_stack((suml3))
+	np.savetxt('suml3.dat',fsuml3)
+
+	fsuml4=np.column_stack((suml4))
+	np.savetxt('suml4.dat',fsuml4)
+
+	fsuml5=np.column_stack((suml5))
+	np.savetxt('suml5.dat',fsuml5)
+
+	rnd=np.column_stack((ui))
+	np.savetxt('rand_vals.dat',rnd)
+
+	f = open('run_info.dat', 'w')
+	f.write("M = "+str(M))
+	f.write("\n")
+	f.write("N = "+str(N))
+	f.write("\n")
+	f.write("e = "+str(e))
+	f.write("\n")
+	f.write("ml = "+str(ml))
+	f.write("\n")
+	f.write("nx = "+str(nx))
+	f.write("\n")
+	f.write("frames ="+str(frames))
+	f.write("\n")
+	f.write("Nl = "+str(Nl))
+	f.write("\n")
+	f.write("L = "+str(L))
+	f.write("\n")
+	f.close()
+
 	
 	# Step 5: If L>=1 test for convergence using YL = M^{\alpha}
 	if L>=1:
@@ -76,7 +115,7 @@ levels = []
 # Multi-level Monte Carlo Solution
 for m in range(0,L+1):	
 	mmc_sol = mmc_sol + suml2[m]/suml1[m]
-	mmc_varn= mmc_varn+ 1./suml1[m]*(suml3[m]/(suml1[m]-1) - (1/(suml1[m]**2-suml1[m]))*(suml2[m])**2)
+	mmc_varn= mmc_varn+ (suml3[m]/(suml1[m]-1) - (1/(suml1[m]**2-suml1[m]))*(suml2[m])**2)
 	levels.append(m)
 
 #figure(1)
@@ -90,27 +129,7 @@ for m in range(0,L+1):
 
 # Output data
 fmean =np.column_stack((T,mmc_sol))
-savetxt('mean.dat',fmean)
+np.savetxt('mean.dat',fmean)
 
 fvarn =np.column_stack((T,mmc_varn))
-savetxt('varn.dat',fmean)
-
-fsuml1=np.column_stack((suml1))
-savetxt('suml1.dat',fsuml1)
-
-fsuml2=np.column_stack((suml2))
-savetxt('suml2.dat',fsuml2)
-
-fsuml3=np.column_stack((suml3))
-savetxt('suml3.dat',fsuml3)
-
-fsuml4=np.column_stack((suml4))
-savetxt('suml4.dat',fsuml4)
-
-fsuml5=np.column_stack((suml5))
-savetxt('suml5.dat',fsuml5)
-
-rnd=np.column_stack((ui))
-savetxt('rand_vals.dat',rnd)
-
-savetxt('run_info.dat',(M,N,e,ml,nx,frames,Nl,L))
+np.savetxt('varn.dat',fmean)

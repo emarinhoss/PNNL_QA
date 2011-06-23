@@ -1,0 +1,18 @@
+#!/bin/bash
+#MSUB -A gc35417
+#MSUB -l walltime=24:00:00
+#MSUB -l nodes=16:ppn=8 
+#MSUB -m a 
+#MSUB -o recon_out.%j
+#MSUB -e recon_err.%j
+#MSUB -N MagRecon
+#MSUB -M Eder.Sousa@pnnl.gov
+
+export LD_LIBRARY_PATH=/home/sous776/software/hdf5/lib:$LD_LIBRARY_PATH
+#module load hpmpi
+#module load intel
+ldd $warpx
+
+python multiMonteCarlo.py
+
+

@@ -1,0 +1,12 @@
+#!/bin/bash
+#MSUB -A gc35417
+#MSUB -l walltime=02:00:00
+#MSUB -l nodes=12:ppn=8 
+#MSUB -m a 
+#MSUB -o recon_out.%j
+#MSUB -e recon_err.%j
+#MSUB -N MagRecon
+#MSUB -M Eder.Sousa@pnnl.gov
+
+crun -nodes 12 -cores 96 $warpx -i recon_pcm.inp
+

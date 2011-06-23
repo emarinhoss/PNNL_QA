@@ -1,15 +1,19 @@
 
 
+MI = 1.0
+ME = value
 Q = 1.0
 GAMMA = 1.66666666667
+LIGHT_SPEED = 1.0
 EPS0 = 1.0
+
 # -*- shell-script -*-
 <warpx>
 
   ##
   # Basic parameters
   ##
-  Run_name = rname # run name
+  Run_name = ssrecon_wv # run name
   Simulation = ssrecon # simulation 
   Real = double # precision type: float/double
   # one of debug, info, warning, error, critical, disabled
@@ -32,7 +36,7 @@ EPS0 = 1.0
 
     Lower = [-12.8, -6.4] # lower coordinates of block
     Upper = [12.8, 6.4] # upper coordinates of block
-    Cells = [nx, ny] # no of cells
+    Cells = [512, 256] # no of cells
 
     PeriodicDirs = [0] # X is periodic
     </grid>
@@ -132,8 +136,8 @@ EPS0 = 1.0
         Kind = phMaxwellEqn
 
         c0 = LIGHT_SPEED
-        gamma = 2.0 # error propagation speed for div(B)
-        chi = 2.0
+        gamma = 1.0 # error propagation speed for div(B)
+        chi = 1.0
       </maxwell>
 
       ##
@@ -176,7 +180,7 @@ EPS0 = 1.0
 
         mass = ME
         charge = -Q
-        epsilon0 = 1.0
+        epsilon0 = EPS0
       </elcCurrents>
 
       ##
@@ -191,7 +195,7 @@ EPS0 = 1.0
 
         charge = Q
         mass = MI
-        epsilon0 = 1.0
+        epsilon0 = EPS0
       </ionCurrents>
 
       <rhoC>
@@ -205,7 +209,7 @@ EPS0 = 1.0
         qe = -Q
         mi = MI
         me = ME
-        epsilon0 = 1.0
+        epsilon0 = EPS0
         chi = 1.0
       </rhoC>
 

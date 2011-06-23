@@ -2,14 +2,14 @@
   Run_name = ssrecon_wv
   Simulation = ssrecon
   Real = double
-  Verbosity = error
+  Verbosity = debug
 
   <ssrecon>
     Type = WxSolver
     Kind = comboSolver
     Time = [0.0, 400.0000000000000001]
     Out = 40
-    Dt = 0.04
+    Dt = 0.002
     UseFixedDt = 0
 
     <grid>
@@ -65,8 +65,8 @@
 
       <wavePropagation>
         Kind = wave2d
-        Cfl = 0.45
-        Cflm = 0.5
+        Cfl = 0.25
+        Cflm = 0.35
         spatialOrder = 2
         sourceSplitting = 1
         limiter = van-leer
@@ -90,7 +90,7 @@
       <maxwell>
         Type = WxHyperbolicEqn
         Kind = phMaxwellEqn
-        c0 = LS
+        c0 = 1.0
         gamma = 1.0
         chi = 1.0
 
@@ -123,7 +123,7 @@
         OutRange = [10, 11, 12]
         mass = ME
         charge = -1.0
-        epsilon0 = 1.0
+        epsilon0 = LS
 
       </elcCurrents>
 
@@ -134,7 +134,7 @@
         OutRange = [10, 11, 12]
         charge = 1.0
         mass = 1.0
-        epsilon0 = 1.0
+        epsilon0 = LS
 
       </ionCurrents>
 
@@ -147,7 +147,7 @@
         qe = -1.0
         mi = 1.0
         me = ME
-        epsilon0 = 1.0
+        epsilon0 = LS
         chi = 1.0
 
       </rhoC>
@@ -170,7 +170,7 @@
       charge = 1.0
       ionmass = 1.0
       elcmass = ME
-      epsilon0 = 1.0
+      epsilon0 = LS
       OnGrid = grid
       ReadVars = [qold]
 

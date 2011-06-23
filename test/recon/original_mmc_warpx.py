@@ -11,17 +11,19 @@ def preprocess(m,N,L,frames,ui):
 
 	sums = np.zeros((4,frames+1),np.float)
 	#home = os.getcwd()
+	MI = 1.0
 
 	for count in range(1,N+1):
 		# uniform varying values
-		v = random.uniform(25,100)
+		v = random.randint(25,100)
 		#v = random.gauss(3,1.0)
-		ui.append(v)
+		Me = float(MI/v)
+		ui.append(Me)
 		
-		Xf = getdata(v,1.0,0.1,m[L],L,frames)
+		Xf = getdata(Me,1.0,0.1,m[L],L,frames)
 		
 		if L > 0:
-			Xc = getdata(v,1.0,0.1,m[L-1],L-1,frames)
+			Xc = getdata(Me,1.0,0.1,m[L-1],L-1,frames)
 		else:
 			Xc=np.zeros(frames+1, np.float)
 
@@ -60,9 +62,10 @@ def getdata(v,LS,BFP,res,L,frames):
 		
 	folder = ("U_" + str(v))
 	where1 = ('L'+str(L) + '/' + folder)
-	os.mkdir(where1)
+	if not(os.path.exists(where1)):
+		os.mkdir(where1)
 
-	p = subprocess.Popen("crun -nodes 1 -cores 1 $warpx -i mmc_testcase.inp", shell=True)
+	p = subprocess.Popen("crun -nodes 16 -cores 128 $warpx -i mmc_testcase.inp", shell=True)
 	sts = os.waitpid(p.pid, 0)[1]
 	
 	fluxtfh = np.zeros(frames+1, np.float)
