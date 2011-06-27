@@ -41,7 +41,7 @@ def variance(sum1,sum2,N):
 	for k in range(0,len(N)):
 		v = sum1[k]/(N[k]-1)
 		m = (sum2[k])**2/(N[k]**2-N[k])
-		var[k] = max(v - m*m)
+		var[k] = max(v - m)
 	return var
 
 def getdata(v,LS,BFP,res,L,frames):
