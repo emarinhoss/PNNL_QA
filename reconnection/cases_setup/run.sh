@@ -1,3 +1,5 @@
+# Report which MC folders recon_008_MR_* finished (last output ssrecon_wv_40.h5 exists).
+
 for f in recon_008_MR_*; do
     band=$(echo "$f")
     cd "$band"

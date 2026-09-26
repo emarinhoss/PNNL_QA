@@ -1,3 +1,7 @@
+% Early study: combine the flux from postprocessing.m (recon_004_MR_*) and
+% restart_postprocessing.m (recon_MR_*) and plot the pooled mean with one
+% standard deviation error bars.
+
 clear all; close all; clc;
 
 postprocessing
@@ -20,5 +24,5 @@ tmean = tmean /19;
 
 tvar = tvar/19 - tmean.*tmean;
 
-errorbar(0:2*frames,tmean,tvar,'r')
+errorbar(0:2*frames,tmean,sqrt(tvar),'r')
 

@@ -1,3 +1,10 @@
+# Helpers for the reconnection MLMC driver.
+# preprocess(m, N, L, frames, ui): runs N samples of MI/ME ~ U{25..100} on
+# level L (and L-1 for the correction); returns sums of Y, Y^2, P_L, P_L^2.
+# variance(sum1, sum2, N): unbiased per-level variance (max over frames).
+# getdata(...): writes mmc_testcase.inp from input_mmc.inp, runs WARPX and
+# returns the normalised reconnected flux per frame.
+
 import numpy as np
 import os
 import random

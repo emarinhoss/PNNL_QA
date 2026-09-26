@@ -1,22 +1,27 @@
+# Plot every MC flux curve (ssrecon_wv_0.dat) plus the mean with one
+# standard deviation error bars; saves Flux_mass_mc.png.
+# Usage: python flux-vis-mc.py [glob]   (default glob: ./recon_001*)
+
 import glob
+import sys
 import os
 from pylab import *
 from numpy import *
 
 
 
-d = glob.glob("./recon_001*")
+d = glob.glob(sys.argv[1] if len(sys.argv) > 1 else "./recon_001*")
 d.sort()
 time = linspace(0,40,41)
 mean = zeros(41, float)
 varn = zeros(41, float)
 
 for m in range(0,len(d)):
-	filename = os.path.join(d[m], "ssrecon_wv_0.dat")
+        filename = os.path.join(d[m], "ssrecon_wv_0.dat")
         print d[m]
-	data = genfromtxt(filename)
+        data = genfromtxt(filename)
         mean = mean + data
-	varn = varn + data*data
+        varn = varn + data*data
         red = float(m)/float(len(d))
         green = 0.5
         blue = float(len(d)-m)/float(len(d))

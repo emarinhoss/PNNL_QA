@@ -1,3 +1,6 @@
+# MLMC diagnostics for several tolerances: samples per level N_l, and the
+# cost of MLMC against standard MC (Nl_and_cost_plot_25_M4.png).
+
 import os
 import glob
 import math
@@ -14,6 +17,7 @@ tol = [1.0e-6,0.66e-6,0.33e-6,0.1e-6]	# tolerance
 nx = 25						# minimum spacial resolution
 res= 1600						# plotting resolution
 frames = 10
+gamma = 2						# cost per sample ~ nx**gamma (1D explicit: cells x time steps)
 
 mmccost = np.zeros(len(tol), np.float)
 mccost  = np.zeros(len(tol), np.float)
@@ -22,7 +26,6 @@ Nll = []
 for n in range(len(tol)):
 	e  = tol[n]
 	ml = []
-	ui = []
 	suml1 = []
 	suml2 = []
 	suml3 = []
@@ -36,7 +39,7 @@ for n in range(len(tol)):
 		ml.append(M**L*nx)
 		if not(os.path.exists("L"+str(L))):
 			os.mkdir("L"+str(L))
-		sums = mmc.preprocess(ml,N,L,frames,res,ui)
+		sums = mmc.preprocess(ml,N,L,frames,res)
 		suml1.append(N)
 		suml2.append(sums[0,:])
 		suml3.append(sums[1,:])
@@ -47,14 +50,17 @@ for n in range(len(tol)):
 		Vl = mmc.variance(suml3,suml2,suml1)
 	
 		# Step 3: Calculate Optimal Nl, l=0,1,...,L
-		Nl = np.ceil(2*e**(-2)*np.sqrt(Vl/ml)*np.sum(np.sqrt(Vl/ml)))
+		# Giles (2008): N_l = 2 e^-2 sqrt(V_l/C_l) sum_k sqrt(V_k C_k),
+		# with C_l the cost of one sample on level l.
+		Cl = np.array(ml, float)**gamma
+		Nl = np.ceil(2*e**(-2)*np.sqrt(Vl/Cl)*np.sum(np.sqrt(Vl*Cl)))
 	
 		# Step 4: Evaluate extra samples at each level as needed for the
 		# new Nl
 		for k in range(0,L+1):
 			Nm = Nl[k] - suml1[k]
 			if Nm > 0.:
-				sums = mmc.preprocess(ml,int(Nm),k,frames,res,ui)
+				sums = mmc.preprocess(ml,int(Nm),k,frames,res)
 				suml1[k] = suml1[k] + int(Nm)
 				suml2[k] = suml2[k] + sums[0,:]
 				suml3[k] = suml3[k] + sums[1,:]
@@ -74,12 +80,17 @@ for n in range(len(tol)):
 		# Step 6: If not converged, set L=L+1 and go back to 2
 		L = L + 1
 	Nll.append(Nl)
+	# MLMC cost relative to one level-0 sample: a level-l sample costs
+	# M**(gamma*l), plus one coarse run M**(gamma*(l-1)) when l > 0.
 	for m in range(0,L+1):
-		mmccost[n] = mmccost[n] + (Nl[m]*M**m)
-		var = suml3[m]/suml1[m] - (1/(suml1[m]**2.-suml1[m]))*(suml2[m])**2
-		mccost[n]  = mccost[n] + (2*var[0]/e**2)*M**m
-
-mmccost = (1.+1./M)*mmccost
+		Cm = M**(gamma*m)
+		if m > 0:
+			Cm = Cm + M**(gamma*(m-1))
+		mmccost[n] = mmccost[n] + Nl[m]*Cm
+	# Standard MC cost: 2*V[P_L]/e**2 samples, all on the finest level L.
+	# V[P_L] uses the fine-grid sums (suml4, suml5), not the corrections.
+	varP = suml5[L]/(suml1[L]-1.) - suml4[L]**2/(suml1[L]**2.-suml1[L])
+	mccost[n] = (2*max(varP)/e**2)*M**(gamma*L)
 
 
 figure(1)
@@ -91,7 +102,7 @@ ylabel('$N_l$',font)
 yticks(fontsize=18)
 xticks(fontsize=18)
 
-subplot(2,1,2),loglog(tol,tol*mmccost,'-sb',tol,tol*mccost,'-ok',linewidth=2)
+subplot(2,1,2),loglog(tol,np.array(tol)**2*mmccost,'-sb',tol,np.array(tol)**2*mccost,'-ok',linewidth=2)
 legend(('MMC','MC'),1)
 xlabel('$\epsilon$',font)
 ylabel('$\epsilon^2 cost$',font)

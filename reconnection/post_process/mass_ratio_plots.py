@@ -1,3 +1,6 @@
+# Compare MMC, MC and PCM: reads old_mmc/{mean,vari}.dat, mc/mc_{mean,vari}.dat
+# and pcm/pcm_{mean,vari}_2.dat and saves mass_ratio_recon_comparison.png.
+
 import glob
 import os
 import subprocess

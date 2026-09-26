@@ -1,4 +1,11 @@
+# MMC statistics: reads ssrecon_wv_{0,1,2}.dat in every run folder, forms the
+# level corrections and writes the MLMC mean (mean.dat) and three variance
+# estimates (vari.dat, columns: Giles estimator variance, modified, and
+# telescoped E[P^2]-E[P]^2); also plots Flux_mass_mmc.png.
+# Usage: python stats_mmc.py [glob]   (default glob: ./recon_001*)
+
 import glob
+import sys
 import os
 import subprocess
 import wxdata as wxdata2
@@ -6,7 +13,7 @@ from numpy import *
 from pylab import *
 import numpy
 
-dir  = glob.glob("./recon_001*")
+dir  = glob.glob(sys.argv[1] if len(sys.argv) > 1 else "./recon_001*")
 time = linspace(0.0,40.0,41)
 
 mean = numpy.zeros((3,41), numpy.float)
@@ -65,7 +72,7 @@ for m in range(0,len(dir)):
         plot(time,level1,'--k')
         plot(time,level0,'--m')
     else:
-	level0 = numpy.genfromtxt(os.path.join(dir[m], "ssrecon_wv_0.dat"))
+        level0 = numpy.genfromtxt(os.path.join(dir[m], "ssrecon_wv_0.dat"))
         flux0 = level0
         mean[0,:] = mean[0,:] + flux0
         varn[0,:] = varn[0,:] + flux0*flux0
@@ -82,8 +89,8 @@ for l in range(0,3):
 ave2 = ave2 - aver*aver
 
 vari = varn[0,:]/(N[0]-1.0) - mean[0,:]*mean[0,:]/(N[0]*N[0]-N[0])
-for m in range(1,3):    
-    vari = vari + (varn[l,:]/(N[l]-1.0) - mean[l,:]*mean[l,:]/(N[l]*N[l]-N[l]))/N[l]
+for m in range(1,3):
+    vari = vari + (varn[m,:]/(N[m]-1.0) - mean[m,:]*mean[m,:]/(N[m]*N[m]-N[m]))/N[m]
     #vari = vari + (varn[l,:] - mean[l,:]*mean[l,:]/N[l])/N[l]
 
 errorbar(time,aver,sqrt(abs(vari)))

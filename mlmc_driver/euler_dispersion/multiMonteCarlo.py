@@ -1,3 +1,8 @@
+# Adaptive multilevel Monte Carlo (Giles 2008) for the dispersive Euler case.
+# Runs WARPX through original_mmc_warpx.preprocess, adds levels (grid refined
+# by M) and samples until the tolerance e is met, then plots the MLMC mean of
+# the velocity profile (Solution.png). Deletes existing L* folders on start.
+
 import os
 import math
 import numpy as np
@@ -13,6 +18,7 @@ L = 0		# inital level
 nx = 100	# spacial resolution
 res= 400	# plotting resolution
 frames = 10
+gamma = 2	# cost per sample ~ nx**gamma (1D explicit: cells x time steps)
 
 ml = []
 suml1 = []
@@ -37,7 +43,10 @@ while 1:
 	Vl = mmc.variance(suml3,suml2,suml1)
 	
 	# Step 3: Calculate Optimal Nl, l=0,1,...,L
-	Nl = np.ceil(2*e**(-2)*np.sqrt(Vl/ml)*np.sum(np.sqrt(Vl/ml)))
+	# Giles (2008): N_l = 2 e^-2 sqrt(V_l/C_l) sum_k sqrt(V_k C_k),
+	# with C_l the cost of one sample on level l.
+	Cl = np.array(ml, float)**gamma
+	Nl = np.ceil(2*e**(-2)*np.sqrt(Vl/Cl)*np.sum(np.sqrt(Vl*Cl)))
 	
 	# Step 4: Evaluate extra samples at each level as needed for the
 	# new Nl

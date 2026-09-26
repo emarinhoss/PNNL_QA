@@ -1,3 +1,9 @@
+# Helpers for the Euler MLMC driver.
+# preprocess(m, N, L, frames, res): runs N samples on level L (and on level
+# L-1 with the same parameter, for the correction), returning sums of
+# Y = P_L - P_{L-1}, Y^2, P_L and P_L^2 sampled on `res` points.
+# variance(sum1, sum2, N): per-level variance (max over x) from those sums.
+
 def preprocess(m,N,L,frames,res):
 	import numpy as np
 	import os
@@ -28,7 +34,7 @@ def preprocess(m,N,L,frames,res):
 		qf = df.read('qnew')
 		vf = qf[:, 1]/qf[:, 0]
 		xf = np.linspace(qf.grid.lowerBounds[0],qf.grid.upperBounds[0],qf.grid.numPhysCells[0])
-		df.close
+		df.close()
 		Xf = np.interp(x,xf,vf)
 		
 		folder = ("U_" + str(v))
@@ -51,7 +57,7 @@ def preprocess(m,N,L,frames,res):
 			qc = dc.read('qnew')
 			vc = qc[:, 1]/qc[:, 0]
 			xc = np.linspace(qc.grid.lowerBounds[0],qc.grid.upperBounds[0],qc.grid.numPhysCells[0])
-			dc.close
+			dc.close()
 			Xc = np.interp(x,xc,vc)
 			where2 = ('L'+str(L-1)+'/'+folder)
 			os.mkdir(where2)

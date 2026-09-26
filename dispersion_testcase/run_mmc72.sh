@@ -1,3 +1,6 @@
+# Run an MMC batch of 72 samples with the serial solver ($warpxser).
+# Expects folders advect_mmc_72_* (MMC folders renamed by hand per batch).
+
 for f in advect_mmc_72_*; do
     band=$(echo "$f")
     cd "$band"

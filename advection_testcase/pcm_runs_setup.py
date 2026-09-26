@@ -1,9 +1,16 @@
+# Probabilistic collocation (PCM) setup: maps the Clenshaw-Curtis nodes in
+# points<last> from [-1, 1] onto the parameter range and creates one folder
+# advect_003_U_<value> per node, holding advect_pcm.pin (template input2.py) and
+# weight.w (the quadrature weight from weights<last>).
+# The uncertain parameter is the amplitude a of the initial condition a*sin(x), uniform on [0.5, 3].
+# Next step: run_pcm.sh.
+
 import os
 
 # get paramenters that remain the same for all runs
 f = open('input2.py', 'r')
 info = f.read()
-f.close
+f.close()
 
 # Number samples
 last = 65
@@ -21,8 +28,8 @@ for k in range(last):
     w = wts.readline()
     Ws.append(float(w))
 
-pts.close
-wts.close
+pts.close()
+wts.close()
 
 a = 0.5
 b = 3
@@ -39,21 +46,21 @@ for l in range(last):
     out = open('advect_pcm.pin','w')
     ## write data into .pin file
     out.write('# -*- python -*- \n')
-    out.write('# The following parameters has been randomly generated. \n')
+    out.write('# The following parameters were set from the collocation points. \n')
     out.write(ux)
     out.write("\n")
-    out.write('# -- End of randomly generated data. --')
+    out.write('# -- End of generated data. --')
     out.write("\n")
     out.write("nx = 100")
     out.write("\n")
     out.write("ny = 100")
     out.write("\n")
     out.write(info)
-    out.close
+    out.close()
 
     out = open('weight.w','w')
     out.write(str(Ws[l]))
-    out.close
+    out.close()
 
     os.mkdir(folder)
     os.system("mv advect_pcm.pin " + folder)

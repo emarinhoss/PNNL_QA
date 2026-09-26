@@ -1,3 +1,5 @@
+# Preprocess ($wxpp) and run ($warpxs) every PCM folder advect_003_*.
+
 for f in advect_003*; do
     band=$(echo "$f")
 

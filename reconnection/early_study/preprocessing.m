@@ -1,9 +1,9 @@
-% The is the preprocessing to be used in the Multilevel
-% Monte Carlo implementation.
+% Early study: Monte Carlo setup for the reconnection runs.
 %
-% The file sets up a prespecified number of run with
-% randomly initialyzed values of the electron to ion mass
-% ratio and speed of light. 
+% Creates `number` run folders recon_004_MR_<MI/ME>_c0_<c> with randomly
+% sampled ion-to-electron mass ratio (uniform on [95, 105], ME = 0.01) and
+% speed of light (uniform on [1, 3]), writes ssrecon_wv.pin from input.py,
+% preprocesses it with $wxpp and moves ssrecon_wv.inp into the folder.
 
 clear all; close all; clc;
 
