@@ -1,3 +1,6 @@
+# Preprocess every MMC folder recon_006_MR_* and submit one PBS job per level
+# (cray_0/1/2.qsub).
+
 for f in recon_006_MR_*; do
     band=$(echo "$f")
     cd "$band"

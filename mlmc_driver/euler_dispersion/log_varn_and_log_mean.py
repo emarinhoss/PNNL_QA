@@ -1,3 +1,7 @@
+# MLMC diagnostics: log_M of the mean and variance of P_l and of the
+# corrections P_l - P_{l-1} against level l, using NN samples per level
+# (log_mean_and_log_variance_plots_25_M4.png).
+
 import os
 import math
 import numpy as np
@@ -15,17 +19,16 @@ Pl_sigm = np.zeros((L+1,res), np.float)
 Pl1_sigm= np.zeros((L+1,res), np.float)
 
 levels = []
-uii = []
 mll = []
 NN = 50
 
 for m in range(0,L+1):
 	mll.append(M**m*res)
-	sums = mmc.preprocess(mll,NN,m,frames,res,uii)
+	sums = mmc.preprocess(mll,NN,m,frames,res)
 	Pl_mean[m,:]  = sums[2,:]/NN
-	Pl_sigm[m,:]  = sums[3,:]/(NN-1) - (1/(NN**2-NN))*(sums[2,:])**2
+	Pl_sigm[m,:]  = sums[3,:]/(NN-1) - (1./(NN**2-NN))*(sums[2,:])**2
 	Pl1_mean[m,:] = sums[0,:]/NN
-	Pl1_sigm[m,:] = sums[1,:]/(NN-1) - (1/(NN**2-NN))*(sums[0,:])**2
+	Pl1_sigm[m,:] = sums[1,:]/(NN-1) - (1./(NN**2-NN))*(sums[0,:])**2
 	levels.append(m)
 
 figure(2)

@@ -35,4 +35,4 @@ end
 fmean = fmean / numdir(1);
 fvar = fvar / numdir(1) - fmean.*fmean;
 
-errorbar(0:frames,fmean,fvar,'b'), hold on
+errorbar(0:frames,fmean,sqrt(fvar),'b'), hold on

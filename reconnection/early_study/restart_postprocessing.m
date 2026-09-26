@@ -1,3 +1,7 @@
+% Early study: like postprocessing.m, for runs in recon_MR_* that were
+% restarted (outputs ssrecon_wv and ssrecon_wv_r): reconnected flux over
+% 2*frames outputs, mean and variance across runs, error-bar plot.
+
 clc;
 
 d = dir('recon_MR_*');
@@ -33,4 +37,4 @@ end
 fmean2 = fmean2 / numdir(1);
 fvar2 = fvar2 / numdir(1) - fmean2.*fmean2;
 
-errorbar(0:2*frames,fmean2,fvar2,'g')
+errorbar(0:2*frames,fmean2,sqrt(fvar2),'g')

@@ -1,5 +1,11 @@
+# Cancel a range of batch jobs with qdel.
+#
+# Usage: python qchange.py FIRST LAST   (cancels job IDs FIRST .. LAST-1)
 import os
+import sys
 
-for k in range(380676, 380744):
-      print k
-      os.system("qdel "+str(k))
+first, last = int(sys.argv[1]), int(sys.argv[2])
+
+for k in range(first, last):
+    print(k)
+    os.system("qdel "+str(k))

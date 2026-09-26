@@ -1,4 +1,9 @@
+# Early study: reconnected flux in every run folder (prefix ssrecon_wv,
+# frames 0..10), then mean and variance across runs; saves reconflux.png.
+# Usage: python meanflux_and_variation.py [glob]   (default glob: ./recon_MR*)
+
 import glob
+import sys
 import numpy
 import os
 import wxdata as wxdata2
@@ -6,7 +11,7 @@ from pylab import *
 from numpy import *
 
 frames = 10
-d = glob.glob("/home/sousae/UQ_PNNL/recon_MR*")
+d = glob.glob(sys.argv[1] if len(sys.argv) > 1 else "./recon_MR*")
 
 flux  = numpy.zeros((size(d),frames+1), numpy.float)
 meanf = numpy.zeros(frames+1, numpy.float)
@@ -41,7 +46,7 @@ varf  = varf/size(d) - meanf*meanf
 figure(1)
 font = {'fontsize'   : 20}
 #plot(T, meanf, '-b')
-errorbar(T, meanf, varf, ecolor='red')
+errorbar(T, meanf, sqrt(varf), ecolor='red')
 xlabel(r'$\omega_{ci}t$',font)
 ylabel('Reconnected flux',font)
 #legend(('TF_128x64_nocor','TF_256x128_nocor','TF_128x64_divBcor','TF_128x64_divcor','TF_512x256_divcor','HallMHD'),2)

@@ -1,3 +1,9 @@
+# Adaptive multilevel Monte Carlo (Giles 2008) for the reconnection case.
+# Runs WARPX through original_mmc_warpx.preprocess, writes the running sums
+# (suml1-5.dat), sampled values (rand_vals.dat) and settings (run_info.dat)
+# each iteration, then the MLMC mean and variance of the reconnected flux
+# (mean.dat, varn.dat). Deletes existing L* folders on start.
+
 import os
 import glob
 import math
@@ -15,6 +21,7 @@ e = 1.0e-2	# tolerance
 L = 0		# inital level
 nx = 256        # spacial resolution
 frames = 40
+gamma = 3       # cost per sample ~ nx**gamma (2D explicit: cells x time steps)
 
 ml = []
 ui = []
@@ -41,7 +48,10 @@ while 1:
 	Vl = mmc.variance(suml3,suml2,suml1)
 	
 	# Step 3: Calculate Optimal Nl, l=0,1,...,L
-	Nl = np.ceil(2*e**(-2)*np.sqrt(Vl/ml)*np.sum(np.sqrt(Vl/ml)))
+	# Giles (2008): N_l = 2 e^-2 sqrt(V_l/C_l) sum_k sqrt(V_k C_k),
+	# with C_l the cost of one sample on level l.
+	Cl = np.array(ml, float)**gamma
+	Nl = np.ceil(2*e**(-2)*np.sqrt(Vl/Cl)*np.sum(np.sqrt(Vl*Cl)))
 	
 	# Step 4: Evaluate extra samples at each level as needed for the
 	# new Nl
@@ -115,7 +125,7 @@ levels = []
 # Multi-level Monte Carlo Solution
 for m in range(0,L+1):	
 	mmc_sol = mmc_sol + suml2[m]/suml1[m]
-	mmc_varn= mmc_varn+ (suml3[m]/(suml1[m]-1) - (1/(suml1[m]**2-suml1[m]))*(suml2[m])**2)
+	mmc_varn= mmc_varn+ (suml3[m]/(suml1[m]-1) - (1./(suml1[m]**2-suml1[m]))*(suml2[m])**2)
 	levels.append(m)
 
 #figure(1)
@@ -132,4 +142,4 @@ fmean =np.column_stack((T,mmc_sol))
 np.savetxt('mean.dat',fmean)
 
 fvarn =np.column_stack((T,mmc_varn))
-np.savetxt('varn.dat',fmean)
+np.savetxt('varn.dat',fvarn)
